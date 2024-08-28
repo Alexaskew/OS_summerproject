@@ -6,7 +6,7 @@ void client_func(int shm_fd1, int shm_fd2, sem_t *sem_request, sem_t *sem_respon
         perror("mmap shm_fd1");
         exit(1);
     }
-    shared_data *shm_ptr2 = mmap(NULL, sizeof(shared_data), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd1, 0);
+    shared_data *shm_ptr2 = mmap(NULL, sizeof(shared_data), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd2, 0);
     if (shm_ptr2 == MAP_FAILED) {
         perror("mmap shm_fd1");
         exit(1);
