@@ -1,11 +1,8 @@
 #include "proj3.h"
+#include <sys/wait.h>
 
 int main(int argc, char *argv[]) {
-    if(argc !=2) {
-        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
-        exit(EXIT_FAILURE);
-    }
-    const char *filename = argv[1];
+    const char *filename = "OS.txt";
 
     int shm_fd1 = shm_open(SHM_NAME1, O_CREAT | O_RDWR, 0666);
     if (shm_fd1 == -1) {
@@ -29,33 +26,46 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    sem_t *sem_request = sem_open(SEM_REQUEST_NAME, O_CREAT, 0644, 0);
-    if (sem_request == SEM_FAILED) {
-        perror("sem_open request");
+    // Δημιουργία semaphores
+    sem_t *sem_cshm1 = sem_open("/sem_cshm1", O_CREAT, 0644, 1);
+    sem_t *sem_dshm1 = sem_open("/sem_dshm1", O_CREAT, 0644, 0);
+    sem_t *sem_dshm2 = sem_open("/sem_dshm2", O_CREAT, 0644, 0);
+    sem_t *sem_sshm2 = sem_open("/sem_sshm2", O_CREAT, 0644, 0);
+
+    if (sem_cshm1 == SEM_FAILED || sem_dshm1 == SEM_FAILED || sem_dshm2 == SEM_FAILED || sem_sshm2 == SEM_FAILED) {
+        perror("sem_open");
         exit(EXIT_FAILURE);
     }
 
-    sem_t *sem_response = sem_open(SEM_RESPONSE_NAME, O_CREAT, 0644, 0);
-    if (sem_response == SEM_FAILED) {
-        perror("sem_open response");
-        exit(EXIT_FAILURE);
+    // Δημιουργία Dispatcher και Server Process
+    if (fork() == 0) {
+        dis_func(shm_fd1, shm_fd2, sem_cshm1, sem_dshm1, sem_dshm2, sem_sshm2, filename);
+        exit(0);
     }
 
-    sem_t *sem_mutex = sem_open(SEM_MUTEX_NAME, O_CREAT, 0644, 1);
-    if (sem_mutex == SEM_FAILED) {
-        perror("sem_open mutex");
-        exit(EXIT_FAILURE);
+    // Δημιουργία Clients
+    for (int i = 0; i < N; i++) {
+        if (fork() == 0) {
+            client_func(i, shm_fd1, sem_cshm1, sem_dshm1, sem_dshm2);
+            exit(0);
+        }
     }
 
-    dis_func(shm_fd1, shm_fd2, sem_request, sem_response, sem_mutex, filename);
+    // Αναμονή για τις διεργασίες
+    for (int i = 0; i < N + 1; i++) {
+        wait(NULL);
+    }
 
-    sem_close(sem_request);
-    sem_close(sem_response);
-    sem_close(sem_mutex);
-    sem_unlink(SEM_REQUEST_NAME);
-    sem_unlink(SEM_RESPONSE_NAME);
-    sem_unlink(SEM_MUTEX_NAME);
+    // Καθαρισμός των semaphores και shared memory
+    sem_close(sem_cshm1);
+    sem_close(sem_dshm1);
+    sem_close(sem_dshm2);
+    sem_close(sem_sshm2);
 
+    sem_unlink("/sem_cshm1");
+    sem_unlink("/sem_dshm1");
+    sem_unlink("/sem_dshm2");
+    sem_unlink("/sem_sshm2");
 
     shm_unlink(SHM_NAME1);
     shm_unlink(SHM_NAME2);
