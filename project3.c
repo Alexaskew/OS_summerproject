@@ -35,20 +35,18 @@ int main(int argc, char *argv[]) {
     sem_unlink("/sem_dshm1");
     sem_unlink("/sem_dshm2");
     sem_unlink("/sem_sshm2");
-    sem_unlink("/sem_done");
     sem_t *sem_cshm1 = sem_open("/sem_cshm1", O_CREAT, 0644, 1);
     sem_t *sem_dshm1 = sem_open("/sem_dshm1", O_CREAT, 0644, 0);
     sem_t *sem_dshm2 = sem_open("/sem_dshm2", O_CREAT, 0644, 0);
     sem_t *sem_sshm2 = sem_open("/sem_sshm2", O_CREAT, 0644, 0);
-    sem_t *sem_done  = sem_open("/sem_done",  O_CREAT, 0644, 1);
 
-    if (sem_cshm1 == SEM_FAILED || sem_dshm1 == SEM_FAILED || sem_dshm2 == SEM_FAILED || sem_sshm2 == SEM_FAILED || sem_done == SEM_FAILED) {
+    if (sem_cshm1 == SEM_FAILED || sem_dshm1 == SEM_FAILED || sem_dshm2 == SEM_FAILED || sem_sshm2 == SEM_FAILED) {
         perror("sem_open");
         exit(EXIT_FAILURE);
     }
 
     if (fork() == 0) {
-        dis_func(shm_fd1, shm_fd2, sem_cshm1, sem_dshm1, sem_dshm2, sem_sshm2, sem_done, filename);
+        dis_func(shm_fd1, shm_fd2, sem_cshm1, sem_dshm1, sem_dshm2, sem_sshm2, filename);
         exit(0);
     }
 
@@ -59,13 +57,11 @@ int main(int argc, char *argv[]) {
     sem_close(sem_dshm1);
     sem_close(sem_dshm2);
     sem_close(sem_sshm2);
-    sem_close(sem_done);
 
     sem_unlink("/sem_cshm1");
     sem_unlink("/sem_dshm1");
     sem_unlink("/sem_dshm2");
     sem_unlink("/sem_sshm2");
-    sem_unlink("/sem_done");
 
     shm_unlink(SHM_NAME1);
     shm_unlink(SHM_NAME2);
