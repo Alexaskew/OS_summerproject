@@ -1,22 +1,19 @@
-all: project3 client_exec
+all: dispatcher client_exec
 
-project3: project3.o server.o dis.o
-	gcc -g -Wall project3.o server.o dis.o -o project3 -pthread -lrt
+dispatcher: dis.o server.o
+	gcc -g -Wall dis.o server.o -o dispatcher -pthread -lrt
 
 client_exec: client_exec.o
 	gcc -g -Wall client_exec.o -o client_exec -pthread -lrt
 
-project3.o: project3.c
-	gcc -g -Wall -c project3.c
-
-client_exec.o: client_exec.c
-	gcc -g -Wall -c client_exec.c
+dis.o: dis.c
+	gcc -g -Wall -c dis.c
 
 server.o: server.c
 	gcc -g -Wall -c server.c
 
-dis.o: dis.c
-	gcc -g -Wall -c dis.c
+client_exec.o: client_exec.c
+	gcc -g -Wall -c client_exec.c
 
 clean:
-	rm -f project3 project3.o server.o dis.o client_exec client_exec.o
+	rm -f dispatcher client_exec *.o

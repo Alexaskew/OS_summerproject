@@ -15,7 +15,6 @@
 #define SHM_NAME2 "/shm2"
 
 #define BUF_SIZE 1024
-#define N 2  // Αριθμός πελατών
 
 typedef struct {
     int line_num;         // Ο αριθμός της γραμμής που ζητάει ο πελάτης
@@ -23,8 +22,6 @@ typedef struct {
 } shared_data;
 
 // Δηλώσεις συναρτήσεων
-void dis_func(int shm_fd1, int shm_fd2, sem_t *sem_cshm1, sem_t *sem_dshm1, sem_t *sem_dshm2, sem_t *sem_sshm2, sem_t *sem_done, const char *filename);
-void server_func(int shm_fd2, sem_t *sem_dshm2, sem_t *sem_sshm2, const char *filename);
-void client_func(int client_num, int shm_fd1, sem_t *sem_cshm1, sem_t *sem_dshm1, sem_t *sem_done);
+void server_func(int shm_fd2, sem_t *sem_dis, sem_t *sem_ser, const char *filename);
 
 #endif // PROJ3_H
